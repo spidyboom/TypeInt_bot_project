@@ -1,6 +1,7 @@
 import sympy as sym
 
 
+# Корни уравнения
 def get_equation_func(line):
     try:
         box = line.split('найти')

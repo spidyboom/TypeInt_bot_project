@@ -2,6 +2,7 @@ import wikipedia
 import re
 
 
+# Википедия
 def get_wiki_func(words):
     # Ищем
     wikipedia.set_lang("ru")

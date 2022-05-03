@@ -1,7 +1,6 @@
 from functions.get_eval import get_eval_func
 from functions.get_wiki import get_wiki_func
 from functions.get_equation import get_equation_func
-from functions.get_translate import get_translate_func
 from functions.get_graph import get_graph_func
 import sqlite3
 
@@ -59,11 +58,13 @@ class BotDB:
         return self.conn.commit()
 
     def get_answer(self, user_id):
+        # Достаём answer
         result = ''.join(self.cursor.execute("SELECT answer FROM users WHERE user_id = ?",
                                              (user_id,)).fetchall()[0])
         return result
 
     def get_past_wiki(self, user_id):
+        # Достаём прошлый запрос на Википедии
         try:
             result = get_wiki_func(''.join(self.cursor.execute("SELECT past_wiki FROM users WHERE user_id = ?",
                                                                (user_id,)).fetchall()[0]))
@@ -72,6 +73,7 @@ class BotDB:
         return result
 
     def get_past_eval(self, user_id):
+        # Достаём прошлое решение на Калькуляторе
         try:
             result = get_eval_func(''.join(self.cursor.execute("SELECT past_eval FROM users WHERE user_id = ?",
                                                                (user_id,)).fetchall()[0]))
@@ -80,15 +82,16 @@ class BotDB:
         return result
 
     def get_past_translate(self, user_id):
+        # Достаём актуальный для перевода язык
         try:
-            result = get_translate_func(
-                ''.join(self.cursor.execute("SELECT past_translate FROM users WHERE user_id = ?",
-                                            (user_id,)).fetchall()[0]))
+            result = ''.join(self.cursor.execute("SELECT past_translate FROM users WHERE user_id = ?",
+                                                 (user_id,)).fetchall()[0])
         except Exception as e:
             result = 'Ваш прошлый перевод не был найден или его не существовало.'
         return result
 
     def get_past_equation(self, user_id):
+        # Достаём прошлые корни уравнений
         try:
             result = get_equation_func(''.join(self.cursor.execute("SELECT past_equation FROM users WHERE user_id = ?",
                                                                    (user_id,)).fetchall()[0]))
@@ -97,6 +100,7 @@ class BotDB:
         return result
 
     def get_past_graph(self, user_id):
+        # Достаём прошлый график
         try:
             result = get_graph_func(''.join(self.cursor.execute("SELECT past_graph FROM users WHERE user_id = ?",
                                                                 (user_id,)).fetchall()[0]))

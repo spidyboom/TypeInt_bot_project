@@ -1,3 +1,5 @@
+from langdetect import detect
+
 from aiogram import Bot, Dispatcher, executor, types
 
 from configs import config
@@ -6,7 +8,7 @@ from functions.get_wiki import get_wiki_func
 from functions.get_equation import get_equation_func
 from functions.get_translate import get_translate_func
 from functions.get_graph import get_graph_func
-from functions.get_random import get_random_func
+from functions.get_lang import get_lang_func, get_words_lang_func
 
 # Подключаем ДБ
 from app.db import BotDB
@@ -24,6 +26,7 @@ async def cmd_start(message: types.Message):
     # Добавляем юзера в БД
     if not BotDB.user_exists(message.from_user.id):
         BotDB.add_user(message.from_user.id)
+        BotDB.add_past_translate(message.from_user.id, 'en')
 
     BotDB.add_answer(message.from_user.id, 'random')
     await message.answer(open("configs/message_start.txt", encoding="utf-8").read())
@@ -83,18 +86,102 @@ async def exit_past_equation(call: types.CallbackQuery):
 async def exit_translate(message):
     BotDB.add_answer(message.from_user.id, 'translate')
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(
-        types.InlineKeyboardButton(
-            text="Узнать сокращение языков для ввода",
-            url="https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%B4%D1%8B_%D1%8F%D0%B7%D1%8B%D0%BA%D0%BE%D0%B2")
-    )
-    keyboard.add(types.InlineKeyboardButton(text="Получить прошлый перевод", callback_data='past_translate'))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Русский", callback_data="ru"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Английский", callback_data="en"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Французский", callback_data="fr"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Немецкий", callback_data="de"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Итальянский", callback_data="it"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Греческий", callback_data="el"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Испанский", callback_data="es"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Арабский", callback_data="ar"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Португальский", callback_data="pt"))
+    keyboard.add(types.InlineKeyboardButton(text="Перевести на Персидский", callback_data="fa"))
+    keyboard.add(types.InlineKeyboardButton(text="Выбрать другой язык",  callback_data="answer_lang"))
     await message.reply(open("configs/message_translate.txt", encoding="utf-8").read(), reply_markup=keyboard)
 
 
-@dp.callback_query_handler(text="past_translate")
-async def exit_past_translate(call: types.CallbackQuery):
-    await call.message.answer(BotDB.get_past_translate(call.from_user.id))
+@dp.callback_query_handler(text="ru")
+async def exit_ru(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'ru')
+    await call.answer('Теперь перевожу на Русский!')
+
+
+@dp.callback_query_handler(text="en")
+async def exit_en(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'en')
+    await call.answer('Теперь перевожу на Английский!')
+
+
+@dp.callback_query_handler(text="fr")
+async def exit_fr(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'fr')
+    await call.answer('Теперь перевожу на Французский!')
+
+
+@dp.callback_query_handler(text="de")
+async def exit_de(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'de')
+    await call.answer('Теперь перевожу на Немецкий!')
+
+
+@dp.callback_query_handler(text="it")
+async def exit_it(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'it')
+    await call.answer('Теперь перевожу на Итальянский!')
+
+
+@dp.callback_query_handler(text="el")
+async def exit_el(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'el')
+    await call.answer('Теперь перевожу на Греческий!')
+
+
+@dp.callback_query_handler(text="es")
+async def exit_es(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'es')
+    await call.answer('Теперь перевожу на Испанский!')
+
+
+@dp.callback_query_handler(text="ar")
+async def exit_ar(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'ar')
+    await call.answer('Теперь перевожу на Арабский!')
+
+
+@dp.callback_query_handler(text="pt")
+async def exit_pt(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'pt')
+    await call.answer('Теперь перевожу на Португальский!')
+
+
+@dp.callback_query_handler(text="fa")
+async def exit_fa(call: types.CallbackQuery):
+    BotDB.add_past_translate(call.from_user.id, 'fa')
+    await call.answer('Теперь перевожу на Персидский!')
+
+
+@dp.message_handler(text="answer_lang")
+async def exit_lang(message: types.Message):
+    board = types.ReplyKeyboardMarkup()
+    board.add(types.KeyboardButton(
+        text="Ввести название языка на Русском",
+        callback_data="lang"))
+    board.add(types.KeyboardButton(
+        text="Ввести слова на нужном для перевода языке",
+        callback_data="words_lang"))
+    await message.answer('Пожалуйста выберите способ выбора языка', reply_markup=board)
+
+
+@dp.callback_query_handler(text="lang")
+async def exit_fa(call: types.CallbackQuery):
+    BotDB.add_answer(call.from_user.id, 'lang')
+    await call.answer('Введите название языка на Русском!')
+
+
+@dp.callback_query_handler(text="words_lang")
+async def exit_fa(call: types.CallbackQuery):
+    BotDB.add_answer(call.from_user.id, 'words_lang')
+    await call.answer('Введите слова на нужном для перевода языке')
 
 
 # Команда graph - График функции
@@ -118,31 +205,51 @@ async def exit_text(message: types.Message):
     answer = BotDB.get_answer(message.from_user.id)
     mess = message.text
 
-    # Если пользователь не указал конкретную функцию, то выбираем её случайно
+    # Пользователь не выбрал функций
     if answer == 'random':
-        await message.reply('Так как Вы не указали конкретную функцию, она будет выбрана случайно!')
-        box = get_random_func(mess)
-        answer, mess = box[0], box[1]
+        await message.answer('Пожалуйста, укажите конкретную функцию!')
 
-    if answer == 'random':
-        await message.answer(mess)
+    # Пользователь вводит на нужном языке символы или слова
+    elif answer == 'words_lang':
+        exit = get_words_lang_func(mess)
+        if exit != 'Не могу найти этот язык':
+            exit = exit.split()
+            BotDB.add_past_translate(message.from_user.id, exit[0])
+            BotDB.add_answer(message.from_user.id, 'translate')
+            await message.answer(f'Теперь перевожу на {exit[1]}!')
+        else:
+            await message.reply(get_words_lang_func(mess))
 
+    # Пользователь вводит на Русском язык для функции translate
+    elif answer == 'lang':
+        exit = get_lang_func(mess)
+        if exit != 'Не могу найти этот язык':
+            BotDB.add_past_translate(message.from_user.id, exit)
+            BotDB.add_answer(message.from_user.id, 'translate')
+            await message.answer(f'Теперь перевожу на {mess.title()}!')
+        else:
+            await message.reply(get_lang_func(mess))
+
+    # Функция калькулятора
     elif answer == 'calc':
         BotDB.add_past_eval(message.from_user.id, mess)
         await message.reply(get_eval_func(mess))
 
+    # Функция википедии
     elif answer == 'wiki':
         BotDB.add_past_wiki(message.from_user.id, mess)
         await message.reply(get_wiki_func(mess))
 
+    # Функция для нахождения корней уравнений
     elif answer == 'equation':
         BotDB.add_past_equation(message.from_user.id, mess)
         await message.reply(get_equation_func(mess))
 
+    # Функция переводчика
     elif answer == 'translate':
-        BotDB.add_past_translate(message.from_user.id, mess)
-        await message.reply(get_translate_func(mess))
+        await message.reply(get_translate_func(mess, detect(mess), BotDB.get_past_translate(message.from_user.id)))
 
+    # Функция постройки графиков
     elif answer == 'graph':
         if get_graph_func(mess) == 'ok':
             BotDB.add_past_graph(message.from_user.id, mess)

@@ -1,10 +1,11 @@
-from textblob import TextBlob
+from translate import Translator
 
 
-def get_translate_func(text):
+# Переводчик
+def get_translate_func(text, from_l, to_l):
     try:
-        blob = TextBlob(text)
-        result = blob.translate(to='en')
+        translator = Translator(from_lang=from_l, to_lang=to_l)
+        result = translator.translate(text)
         return result
     except Exception as e:
         box = '\n'.join(['Текст не может быть переведён.',
