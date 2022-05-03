@@ -96,8 +96,12 @@ async def exit_translate(message):
     keyboard.add(types.InlineKeyboardButton(text="Перевести на Арабский", callback_data="ar"))
     keyboard.add(types.InlineKeyboardButton(text="Перевести на Португальский", callback_data="pt"))
     keyboard.add(types.InlineKeyboardButton(text="Перевести на Персидский", callback_data="fa"))
-    keyboard.add(types.InlineKeyboardButton(text="Выбрать другой язык",  callback_data="answer_lang"))
-    await message.reply(open("configs/message_translate.txt", encoding="utf-8").read(), reply_markup=keyboard)
+
+    await message.reply(open("configs/message_translate_first.txt", encoding="utf-8").read(), reply_markup=keyboard)
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    keyboard.add(types.KeyboardButton(text="Выбрать другой язык(Функция translate)"))
+    await message.answer(open("configs/message_translate_second.txt", encoding="utf-8").read(), reply_markup=keyboard)
 
 
 @dp.callback_query_handler(text="ru")
@@ -160,16 +164,16 @@ async def exit_fa(call: types.CallbackQuery):
     await call.answer('Теперь перевожу на Персидский!')
 
 
-@dp.message_handler(text="answer_lang")
+@dp.message_handler(text="Выбрать другой язык(Функция translate)")
 async def exit_lang(message: types.Message):
-    board = types.ReplyKeyboardMarkup()
-    board.add(types.KeyboardButton(
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(
         text="Ввести название языка на Русском",
         callback_data="lang"))
-    board.add(types.KeyboardButton(
-        text="Ввести слова на нужном для перевода языке",
+    keyboard.add(types.InlineKeyboardButton(
+        text="Ввести предложения на нужном для перевода языке",
         callback_data="words_lang"))
-    await message.answer('Пожалуйста выберите способ выбора языка', reply_markup=board)
+    await message.answer('Пожалуйста выберите способ выбора языка', reply_markup=keyboard)
 
 
 @dp.callback_query_handler(text="lang")
@@ -209,7 +213,7 @@ async def exit_text(message: types.Message):
     if answer == 'random':
         await message.answer('Пожалуйста, укажите конкретную функцию!')
 
-    # Пользователь вводит на нужном языке символы или слова
+    # Пользователь вводит на нужном языке предложения
     elif answer == 'words_lang':
         exit = get_words_lang_func(mess)
         if exit != 'Не могу найти этот язык':

@@ -14,9 +14,10 @@ def get_lang_func(lang):
     return 'Не могу найти этот язык'
 
 
+# Функция для определения языка по вводимому предложению
 def get_words_lang_func(word):
     lang = detect(word)
     for i in countries:
         if i[1] == lang:
-            return i[0] + ' ' + get_translate_func(i[1], 'en', 'ru')
+            return i[1] + ' ' + get_translate_func(i[0], 'en', 'ru')
     return 'Не могу найти этот язык'
