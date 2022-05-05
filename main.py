@@ -1,6 +1,8 @@
 from langdetect import detect
+from collections import defaultdict
 
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from configs import config
 from functions.get_eval import get_eval_func
@@ -17,7 +19,9 @@ BotDB = BotDB('app/datebase.db')
 
 # Создаём бота и даём ему токен
 bot = Bot(token=config.TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+storage = defaultdict(dict)
 
 
 # Команда start - Старт бота
@@ -27,6 +31,7 @@ async def cmd_start(message: types.Message):
     if not BotDB.user_exists(message.from_user.id):
         BotDB.add_user(message.from_user.id)
         BotDB.add_past_translate(message.from_user.id, 'en')
+        storage[message.from_user.id]['answer'] = 'Вы только начали работу!'
 
     BotDB.add_answer(message.from_user.id, 'random')
     await message.answer(open("configs/message_start.txt", encoding="utf-8").read())
@@ -37,6 +42,18 @@ async def cmd_start(message: types.Message):
 async def cmd_help(message: types.Message):
     BotDB.add_answer(message.from_user.id, 'random')
     await message.answer(open("configs/message_help.txt", encoding="utf-8").read())
+
+
+# Команда answer - Последняя использованная функция
+@dp.message_handler(commands="answer")
+async def cmd_answer(message: types.Message):
+    BotDB.add_answer(message.from_user.id, 'random')
+    try:
+        await message.answer(storage[message.from_user.id]['answer'])
+    except:
+        # Типа: если бот на серваке, то эта часть вызываться не будет
+        storage[message.from_user.id]['answer'] = 'Что-то не помню вашу историю :('
+        await message.answer(storage[message.from_user.id]['answer'])
 
 
 # Команда calc - Калькулятор
@@ -236,25 +253,30 @@ async def exit_text(message: types.Message):
 
     # Функция калькулятора
     elif answer == 'calc':
+        storage[message.from_user.id]['answer'] = 'Функция - Калькулятор - /calc'
         BotDB.add_past_eval(message.from_user.id, mess)
         await message.reply(get_eval_func(mess))
 
     # Функция википедии
     elif answer == 'wiki':
+        storage[message.from_user.id]['answer'] = 'Функция - Википедия - /wiki'
         BotDB.add_past_wiki(message.from_user.id, mess)
         await message.reply(get_wiki_func(mess))
 
     # Функция для нахождения корней уравнений
     elif answer == 'equation':
+        storage[message.from_user.id]['answer'] = 'Функция - Корни Уравнения - /equation'
         BotDB.add_past_equation(message.from_user.id, mess)
         await message.reply(get_equation_func(mess))
 
     # Функция переводчика
     elif answer == 'translate':
+        storage[message.from_user.id]['answer'] = 'Функция - Переводчик - /translate'
         await message.reply(get_translate_func(mess, detect(mess), BotDB.get_past_translate(message.from_user.id)))
 
     # Функция постройки графиков
     elif answer == 'graph':
+        storage[message.from_user.id]['answer'] = 'Функция - График Уравнения - /graph'
         if get_graph_func(mess) == 'ok':
             BotDB.add_past_graph(message.from_user.id, mess)
             await message.reply_photo(open("message_graph.png", "rb"))
