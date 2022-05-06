@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# Графики
 def get_graph_func(func):
+    """ Графики уравнения """
+
     try:
         y = lambda x: eval(func)
         fig = plt.subplots()

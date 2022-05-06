@@ -2,10 +2,12 @@ import wikipedia
 import re
 
 
-# Википедия
 def get_wiki_func(words):
-    # Ищем
+    """ Википедия """
+
+    # Подключаемся
     wikipedia.set_lang("ru")
+
     try:
         # Режем и форматируем
         content_wiki = wikipedia.page(words)

@@ -1,8 +1,9 @@
 from translate import Translator
 
 
-# Переводчик
 def get_translate_func(text, from_l, to_l):
+    """ Переводчик """
+
     try:
         translator = Translator(from_lang=from_l, to_lang=to_l)
         result = translator.translate(text)

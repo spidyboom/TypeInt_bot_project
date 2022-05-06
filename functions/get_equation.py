@@ -1,8 +1,9 @@
 import sympy as sym
 
 
-# Корни уравнения
 def get_equation_func(line):
+    """ Корни уравнения """
+
     try:
         box = line.split('найти')
         if len(box) == 2:

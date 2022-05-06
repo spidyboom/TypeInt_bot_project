@@ -2,8 +2,9 @@ import re
 import math
 
 
-# Калькулятор
 def get_eval_func(line):
+    """ Калькулятор """
+
     try:
         # Слава интернету и английским форумам!
         output_eval = eval(re.sub(r'√(\d+)', r'math.sqrt(\1)', line))

@@ -24,9 +24,10 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 storage = defaultdict(dict)
 
 
-# Команда start - Старт бота
 @dp.message_handler(commands="start")
 async def cmd_start(message: types.Message):
+    """ Команда start - Старт бота """
+
     # Добавляем юзера в БД
     if not BotDB.user_exists(message.from_user.id):
         BotDB.add_user(message.from_user.id)
@@ -37,16 +38,18 @@ async def cmd_start(message: types.Message):
     await message.answer(open("configs/message_start.txt", encoding="utf-8").read())
 
 
-# Команда help - Возможности бота
 @dp.message_handler(commands="help")
 async def cmd_help(message: types.Message):
+    """ Команда help - Возможности бота """
+
     BotDB.add_answer(message.from_user.id, 'random')
     await message.answer(open("configs/message_help.txt", encoding="utf-8").read())
 
 
-# Команда answer - Последняя использованная функция
 @dp.message_handler(commands="answer")
 async def cmd_answer(message: types.Message):
+    """ Команда answer - Последняя использованная функция """
+
     BotDB.add_answer(message.from_user.id, 'random')
     try:
         await message.answer(storage[message.from_user.id]['answer'])
@@ -56,9 +59,10 @@ async def cmd_answer(message: types.Message):
         await message.answer(storage[message.from_user.id]['answer'])
 
 
-# Команда calc - Калькулятор
 @dp.message_handler(commands="calc")
 async def exit_calc(message):
+    """ Команда calc - Калькулятор """
+
     BotDB.add_answer(message.from_user.id, 'calc')
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Получить прошлый ответ", callback_data='past_eval'))
@@ -70,9 +74,10 @@ async def exit_past_eval(call: types.CallbackQuery):
     await call.message.answer(BotDB.get_past_eval(call.from_user.id))
 
 
-# Команда wiki - Википедия
 @dp.message_handler(commands="wiki")
 async def exit_wiki(message: types.Message):
+    """ Команда wiki - Википедия """
+
     BotDB.add_answer(message.from_user.id, 'wiki')
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Получить прошлый запрос", callback_data='past_wiki'))
@@ -84,9 +89,10 @@ async def exit_past_wiki(call: types.CallbackQuery):
     await call.message.answer(BotDB.get_past_wiki(call.from_user.id))
 
 
-# Команда equation - Корни уравнения
 @dp.message_handler(commands="equation")
 async def exit_equation(message):
+    """ Команда equation - Корни уравнения """
+
     BotDB.add_answer(message.from_user.id, 'equation')
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Получить прошлые корни", callback_data='past_equation'))
@@ -98,21 +104,26 @@ async def exit_past_equation(call: types.CallbackQuery):
     await call.message.answer(BotDB.get_past_equation(call.from_user.id))
 
 
-# Команда translate - Переводчик
 @dp.message_handler(commands="translate")
 async def exit_translate(message):
+    """ Команда translate - Переводчик """
+
     BotDB.add_answer(message.from_user.id, 'translate')
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Русский", callback_data="ru"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Английский", callback_data="en"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Французский", callback_data="fr"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Немецкий", callback_data="de"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Итальянский", callback_data="it"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Греческий", callback_data="el"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Испанский", callback_data="es"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Арабский", callback_data="ar"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Португальский", callback_data="pt"))
-    keyboard.add(types.InlineKeyboardButton(text="Перевести на Персидский", callback_data="fa"))
+
+    box_lang = [
+        ["Перевести на Русский", "ru"],
+        ["Перевести на Английский", "en"],
+        ["Перевести на Французский", "fr"],
+        ["Перевести на Немецкий", "de"],
+        ["Перевести на Итальянский", "it"],
+        ["Перевести на Греческий", "el"],
+        ["Перевести на Испанский", "es"],
+        ["Перевести на Арабский", "ar"],
+        ["Перевести на Португальский", "pt"],
+        ["Перевести на Персидский", "fa"]]
+    for mini_box in box_lang:
+        keyboard.add(types.InlineKeyboardButton(text=mini_box[0], callback_data=mini_box[1]))
 
     await message.reply(open("configs/message_translate_first.txt", encoding="utf-8").read(), reply_markup=keyboard)
 
@@ -205,9 +216,9 @@ async def exit_fa(call: types.CallbackQuery):
     await call.answer('Введите слова на нужном для перевода языке')
 
 
-# Команда graph - График функции
 @dp.message_handler(commands="graph")
 async def exit_graph(message):
+    """ Команда graph - График функции """
     BotDB.add_answer(message.from_user.id, 'graph')
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Получить прошлый график", callback_data='past_graph'))
@@ -220,9 +231,10 @@ async def exit_past_graph(call: types.CallbackQuery):
     await call.message.answer_photo(open("message_graph.png", "rb"))
 
 
-# Вызов определённых функций в зависимости от выбора пользователя
 @dp.message_handler()
 async def exit_text(message: types.Message):
+    """ Вызов определённых функций в зависимости от выбора пользователя """
+
     answer = BotDB.get_answer(message.from_user.id)
     mess = message.text
 
