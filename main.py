@@ -24,6 +24,15 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 storage = defaultdict(dict)
 
 
+def create_handler(mess, data):
+    """ Для переводчика """
+    async def handle_it(message: types.Message):
+        BotDB.add_past_translate(message.from_user.id, data)
+        await message.answer(mess)
+
+    dp.register_callback_query_handler(handle_it, text=data)
+
+
 @dp.message_handler(commands="start")
 async def cmd_start(message: types.Message):
     """ Команда start - Старт бота """
@@ -111,6 +120,20 @@ async def exit_translate(message):
     BotDB.add_answer(message.from_user.id, 'translate')
     keyboard = types.InlineKeyboardMarkup()
 
+    box_handler = [
+        ['Теперь перевожу на Русский!', "ru"],
+        ['Теперь перевожу на Английский!', "en"],
+        ['Теперь перевожу на Французский!', "fr"],
+        ['Теперь перевожу на Немецкий!', "de"],
+        ['Теперь перевожу на Итальянский!', "it"],
+        ['Теперь перевожу на Греческий!', "el"],
+        ['Теперь перевожу на Испанский!', "es"],
+        ['Теперь перевожу на Арабский!', "ar"],
+        ['Теперь перевожу на Португальский!', "pt"],
+        ['Теперь перевожу на Персидский!', "fa"]]
+    for phrase in box_handler:
+        create_handler(phrase[0], phrase[1])
+
     box_lang = [
         ["Перевести на Русский", "ru"],
         ["Перевести на Английский", "en"],
@@ -120,7 +143,7 @@ async def exit_translate(message):
         ["Перевести на Греческий", "el"],
         ["Перевести на Испанский", "es"],
         ["Перевести на Арабский", "ar"],
-        ["Перевести на Португальский", "pt"],
+        ["Перевести на Португальский!", "pt"],
         ["Перевести на Персидский", "fa"]]
     for mini_box in box_lang:
         keyboard.add(types.InlineKeyboardButton(text=mini_box[0], callback_data=mini_box[1]))
@@ -130,66 +153,6 @@ async def exit_translate(message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     keyboard.add(types.KeyboardButton(text="Выбрать другой язык(Функция translate)"))
     await message.answer(open("configs/message_translate_second.txt", encoding="utf-8").read(), reply_markup=keyboard)
-
-
-@dp.callback_query_handler(text="ru")
-async def exit_ru(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'ru')
-    await call.answer('Теперь перевожу на Русский!')
-
-
-@dp.callback_query_handler(text="en")
-async def exit_en(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'en')
-    await call.answer('Теперь перевожу на Английский!')
-
-
-@dp.callback_query_handler(text="fr")
-async def exit_fr(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'fr')
-    await call.answer('Теперь перевожу на Французский!')
-
-
-@dp.callback_query_handler(text="de")
-async def exit_de(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'de')
-    await call.answer('Теперь перевожу на Немецкий!')
-
-
-@dp.callback_query_handler(text="it")
-async def exit_it(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'it')
-    await call.answer('Теперь перевожу на Итальянский!')
-
-
-@dp.callback_query_handler(text="el")
-async def exit_el(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'el')
-    await call.answer('Теперь перевожу на Греческий!')
-
-
-@dp.callback_query_handler(text="es")
-async def exit_es(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'es')
-    await call.answer('Теперь перевожу на Испанский!')
-
-
-@dp.callback_query_handler(text="ar")
-async def exit_ar(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'ar')
-    await call.answer('Теперь перевожу на Арабский!')
-
-
-@dp.callback_query_handler(text="pt")
-async def exit_pt(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'pt')
-    await call.answer('Теперь перевожу на Португальский!')
-
-
-@dp.callback_query_handler(text="fa")
-async def exit_fa(call: types.CallbackQuery):
-    BotDB.add_past_translate(call.from_user.id, 'fa')
-    await call.answer('Теперь перевожу на Персидский!')
 
 
 @dp.message_handler(text="Выбрать другой язык(Функция translate)")
